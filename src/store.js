@@ -1,0 +1,47 @@
+import { createStore } from 'redux';
+import reducers from './components/reducers';
+import {addData} from './components/actions';
+import axios from "axios";
+const root = "http://172.26.38.106:8081/";
+
+const store = createStore(reducers);
+
+axios.get(root+"positive")
+      .then(res => {
+        store.dispatch(addData(res.data,"positive"));
+      })
+      .catch((error)=>{
+          // handle error
+        console.log(error);
+      });
+axios.get(root+"aurinNegative")
+      .then(res => {
+        store.dispatch(addData(res.data,"aurinNegative"));
+      })
+      .catch((error)=>{
+          // handle error
+        console.log(error);
+      });
+
+const timePeriods = ["T1","T2","T3","T4"];
+const cities = ["melbourne","sydney","perth","brisbane"];
+var points = [];
+timePeriods.map(time=>{
+  var obj = [];
+  cities.map(city =>{
+    axios.get(root + "past_Geo/"+city+"/"+time)
+          .then(res => {
+            obj.push(res.data);
+          })
+          .catch((error)=>{
+              // handle error
+            console.log(error);
+          });
+  });
+  points.push(obj);
+})
+var dataName =  "allPoints";
+store.dispatch(addData(points,dataName));
+
+
+export default store ;
